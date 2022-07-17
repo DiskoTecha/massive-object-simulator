@@ -5,6 +5,7 @@
 
 #include "MassiveObject.h"
 #include "Vector3.h"
+#include <memory>
 
 namespace dw
 {
@@ -19,6 +20,8 @@ namespace dw
 		MassiveObject(long double, long double, Vector3 pos = Vector3(), Vector3 vel = Vector3());
 		MassiveObject(MassiveObject&);
 		MassiveObject(MassiveObject&&) noexcept;
+
+		void reset();
 	};
 }
 
