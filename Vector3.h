@@ -1,0 +1,49 @@
+#ifndef DW_VECTOR_3
+#define DW_VECTOR_3
+
+#define DW_VECTOR_3_VERSION "1.0.1"
+
+#include <memory>
+#include <cstdio>
+#include <iostream>
+
+namespace dw
+{
+	class Vector3
+	{
+	public:
+		long double x = 0.0;
+		long double y = 0.0;
+		long double z = 0.0;
+
+		Vector3();
+		Vector3(long double x, long double y = 0, long double z = 0);
+		Vector3(Vector3&);
+		Vector3(Vector3&&) noexcept;
+		~Vector3();
+
+		Vector3& operator = (Vector3);
+		Vector3 operator + (const Vector3&) const;
+		Vector3 operator + (const long double&) const;
+		Vector3 operator - (const Vector3&) const;
+		Vector3 operator - (const long double&) const;
+		Vector3 operator * (const Vector3&) const;
+		Vector3 operator * (const long double&) const;
+		Vector3 operator / (const Vector3&) const;
+		Vector3 operator / (const long double&) const;
+
+		void reset();
+		void swap(Vector3&);
+		const char* c_str();
+		const char* version();
+
+		double dot(const Vector3&) const;
+		Vector3 cross(const Vector3&) const;
+	};
+}
+
+// Left bit shift overload for use with std::cout
+std::ostream& operator << (std::ostream& os, const dw::Vector3& rhs);
+
+
+#endif
