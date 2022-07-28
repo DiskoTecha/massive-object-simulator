@@ -76,30 +76,30 @@ namespace dw
 	{
 		return Vector3(x / rhs.x, y / rhs.y, z / rhs.z);
 	}
-
-	// Double on Vector3 operators
-	Vector3 Vector3::operator + (const long double& rhs) const
+	
+	// Extra assignment operators
+	Vector3 Vector3::operator += (long double d) const
 	{
-		return Vector3(x + rhs, y + rhs, z + rhs);
+		return Vector3(x + d, y + d, z + d);
 	}
 
-	Vector3 Vector3::operator - (const long double& rhs) const
+	Vector3 Vector3::operator -= (long double d) const
 	{
-		return Vector3(x - rhs, y - rhs, z - rhs);
+		return Vector3(x - d, y - d, z - d);
 	}
 
-	Vector3 Vector3::operator * (const long double& rhs) const
+	Vector3 Vector3::operator *= (long double d) const
 	{
-		return Vector3(x * rhs, y * rhs, z * rhs);
+		return Vector3(x * d, y * d, z * d);
 	}
 
-	Vector3 Vector3::operator / (const long double& rhs) const
+	Vector3 Vector3::operator /= (long double d) const
 	{
-		return Vector3(x / rhs, y / rhs, z / rhs);
+		return Vector3(x / d, y / d, z / d);
 	}
 
 	// Vector operations
-	double Vector3::dot(const Vector3& rhs) const
+	long double Vector3::dot(const Vector3& rhs) const
 	{
 		Vector3 multiplied = *this * rhs;
 		return multiplied.x + multiplied.y + multiplied.z;
@@ -110,6 +110,54 @@ namespace dw
 		return Vector3((this->y * rhs.z) - (this->z * rhs.y),
 			(this->z * rhs.x) - (this->x * rhs.z),
 			(this->x * rhs.y) - (this->y * rhs.x));
+	}
+
+	long double Vector3::magnitude()
+	{
+		return sqrt((this->x * this->x) + (this->y * this->y) + (this->z * this->z));
+	}
+
+	Vector3 Vector3::unit()
+	{
+		return *this / this->magnitude();
+	}
+
+
+	// Double on Vector3 operators
+	Vector3 operator + (Vector3 v, const long double& d)
+	{
+		v += d;
+		return v;
+	}
+
+	Vector3 operator - (Vector3 v, const long double& d)
+	{
+		v -= d;
+		return v;
+	}
+
+	Vector3 operator * (Vector3 v, const long double& d)
+	{
+		v *= d;
+		return v;
+	}
+
+	Vector3 operator / (Vector3 v, const long double& d)
+	{
+		v /= d;
+		return v;
+	}
+
+	// Direction irrelevant for + and *, disallowing dividing or subtracting vector3 from a double
+	Vector3 operator + (const long double& d, Vector3 v)
+	{
+		v += d;
+		return v;
+	}
+	Vector3 operator * (const long double& d, Vector3 v)
+	{
+		v *= d;
+		return v;
 	}
 }
 

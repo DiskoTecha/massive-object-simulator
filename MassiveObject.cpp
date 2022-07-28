@@ -2,8 +2,21 @@
 
 namespace dw
 {
-	MassiveObject::MassiveObject() : position(Vector3()), velocity(Vector3()), mass(0.0), volume(0.0) {}
-	MassiveObject::MassiveObject(long double mass, long double volume, Vector3 pos, Vector3 vel) : position(pos), velocity(vel), mass(mass), volume(volume) {}
+	// Initialize static variable
+	int MassiveObject::objectsInstantiated = 0;
+
+	// Constructors
+	MassiveObject::MassiveObject() : position(Vector3()), velocity(Vector3()), mass(0.0), volume(0.0)
+	{
+		++objectsInstantiated;
+		id = objectsInstantiated;
+	}
+
+	MassiveObject::MassiveObject(long double mass, long double volume, Vector3 pos, Vector3 vel) : position(pos), velocity(vel), mass(mass), volume(volume)
+	{
+		++objectsInstantiated;
+		id = objectsInstantiated;
+	}
 
 	MassiveObject::MassiveObject(MassiveObject& otherObject)
 	{
@@ -11,6 +24,9 @@ namespace dw
 		volume = otherObject.volume;
 		position = otherObject.position;
 		velocity = otherObject.velocity;
+
+		++objectsInstantiated;
+		id = objectsInstantiated;
 	}
 
 	MassiveObject::MassiveObject(MassiveObject&& rhs) noexcept
@@ -19,6 +35,10 @@ namespace dw
 		volume = std::move(rhs.mass);
 		position = std::move(rhs.position);
 		velocity = std::move(rhs.velocity);
+
+		// Although it was moved, the rhs still exists and it is a new MassiveObject
+		++objectsInstantiated;
+		id = objectsInstantiated;
 
 		rhs.reset();
 	}
@@ -29,5 +49,52 @@ namespace dw
 		volume = 0.0;
 		position = Vector3();
 		velocity = Vector3();
+	}
+
+	// Getters
+	int MassiveObject::getId()
+	{
+		return id;
+	}
+
+	long double MassiveObject::getMass()
+	{
+		return mass;
+	}
+
+	long double MassiveObject::getVolume()
+	{
+		return volume;
+	}
+
+	Vector3 MassiveObject::getPosition()
+	{
+		return position;
+	}
+
+	Vector3 MassiveObject::getVelocity()
+	{
+		return velocity;
+	}
+
+	// Setters
+	void MassiveObject::setMass(long double mass)
+	{
+		this->mass = mass;
+	}
+
+	void MassiveObject::setVolume(long double volume)
+	{
+		this->volume = volume;
+	}
+
+	void MassiveObject::setPosition(Vector3 position)
+	{
+		this->position = position;
+	}
+
+	void MassiveObject::setVelocity(Vector3 velocity)
+	{
+		this->velocity = velocity;
 	}
 }

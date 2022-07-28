@@ -14,9 +14,9 @@ namespace dw
 	class DWUnitTest
 	{
 		const char* testString;
-		unsigned long int passCount;
-		unsigned long int failCount;
-		bool summaryOnly;
+		unsigned long int passCount = 0;
+		unsigned long int failCount = 0;
+		bool summaryOnly = false;
 
 		// Disallowing use of default, copy, and assignment constructors
 		DWUnitTest() {};

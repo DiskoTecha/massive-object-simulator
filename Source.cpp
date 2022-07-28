@@ -4,13 +4,49 @@
 #include "DWUnitTest.h"
 #include "MassiveObject.h"
 #include "Vector3.h"
+#include <cstdio>
+
+#include "pandaFramework.h"
+#include "pandaSystem.h"
+#include "genericAsyncTask.h"
+#include "asyncTaskManager.h"
+#include "cIntervalManager.h"
+#include "cLerpNodePathInterval.h"
+#include "cMetaInterval.h"
+
+// Global task manager
+PointerTo<AsyncTaskManager> taskManager = AsyncTaskManager::get_global_ptr();
+
+// Global clock
+PointerTo<ClockObject> globalClock = ClockObject::get_global_clock();
+
+// Camera
+NodePath camera;
+
+// Task -- a global or static function that returns the AsyncTask::DoneStatus, task object pointer passed as argument, and pointer to custom data (we pass void pointer instead)
+
+AsyncTask::DoneStatus massiveObjectMovementTask(GenericAsyncTask* task, void* data)
+{
+	// TODO handle the new positions of the massive objects
+
+	// Tells the task manager to continue this task the next frame
+	return AsyncTask::DS_cont;
+}
+
+AsyncTask::DoneStatus cameraMovementTask(GenericAsyncTask* task, void* data)
+{
+	// TODO handle the movement of the camera
+	
+	// Continue task in next frame
+	return AsyncTask::DS_cont;
+}
 
 using namespace dw;
 
-int main()
+int main(int argc, char **argv)
 {
 	DWUnitTest unitTest("Vector3 Test", false);
-	printf("DWUnitTest Version: %s\n", unitTest.version());
+	std::cout << "DWUnitTest Version:" << unitTest.version() << std::endl;
 
 	// ---------- Vector3 testing ---------- //
 
@@ -69,8 +105,6 @@ int main()
 	vec3_9.reset();
 	unitTest.test("Reset: reset()", vec3_9.x == 0 && vec3_9.y == 0 && vec3_9.z == 0);
 
-	unitTest.test("C String Print: c_str()", !strncmp(vec3_8.c_str(), "<10.000000, 11.000000, 12.000000>", sizeof(vec3_8.c_str())));
-
 	Vector3 vec3_10(2, 4.74, 6);
 	Vector3 vec3_11(7.56, 6, 9);
 
@@ -80,11 +114,31 @@ int main()
 	Vector3 vecCross = vec3_10.cross(vec3_11);
 	unitTest.test("Cross Product: cross()", vecCross.x == (vec3_10.y * vec3_11.z) - (vec3_10.z * vec3_11.y) && vecCross.y == (vec3_10.z * vec3_11.x) - (vec3_10.x * vec3_11.z) && vecCross.z == (vec3_10.x * vec3_11.y) - (vec3_10.y * vec3_11.x));
 
-	// Version getter
-	unitTest.test("Version Getter: version()", !strncmp(vecCross.version(), DW_VECTOR_3_VERSION, sizeof(vecCross.version())));
-
 	// Vector3: Summary
 	unitTest.report();
 
-	printf("\n1.989e60 * 3 = %f", 1.989e60 * 3);
+	// Open a new window framework
+	PandaFramework frame;
+	frame.open_framework(argc, argv);
+
+	// Set the window title and open the window
+	frame.set_window_title("Panda Window");
+	WindowFramework* window = frame.open_window();
+	window->set_background_type(WindowFramework::BackgroundType::BT_black);
+
+	// Store camera in variable
+	camera = window->get_camera_group();
+
+	// TODO add the tasks
+
+	// Run engine
+	frame.main_loop();
+
+	// Shut down engine when done
+	frame.close_framework();
+
+	return 0;
 }
+
+
+
