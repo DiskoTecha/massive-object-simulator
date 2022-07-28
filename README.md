@@ -8,8 +8,12 @@ As of 17 Jul 2022, all bodies will be assumed as perfect spheres and their volum
 Position and velocity is stored as Vector3's, which just stores 3-dimensional direction data and has vector dot and cross product helper functions.
 
 ### The Gravitational Body Simulator Class
-*NOT IN GITHUB REPO YET*
+Added 28 Jul 2022
 The class that does the work of calculating multi-body movement due to the combined gravitational forces creating an overall field.
+Adds velocity from the forces acting over a specific amount of time, and then updates positions for that specific time due to the velocities.
+F~1~ = m~1~a = m~1~dv~1~/dt => dv~1~ = F~1~dt/m~1~
+F~1~ = Gm~1~m~2~/r^2^ => ==dv~1~ = Gm~2~dt/r^2^==
+dv~1~ = dx~1~/dt => ==dx~1~ = dv~1~dt==
 
 ### DW Unit Test Class
 Custom unit testing class.
