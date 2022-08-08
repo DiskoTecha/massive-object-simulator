@@ -25,6 +25,7 @@
     <ClCompile Include="MassiveObject.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="Visualizer3D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DWUnitTest.h" />
@@ -32,6 +33,7 @@
     <ClInclude Include="GravitationalBodySimulator.h" />
     <ClInclude Include="MassiveObject.h" />
     <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Visualizer3D.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

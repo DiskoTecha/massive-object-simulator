@@ -56,6 +56,12 @@ namespace dw
 		return DW_VECTOR_3_VERSION;
 	}
 
+	// Bool equality operator
+	bool Vector3::operator == (const Vector3& rhs) const
+	{
+		return this->x == rhs.x && this->y == rhs.y && this->z == rhs.z;
+	}
+
 	// Vector3 on Vector3 operators
 	Vector3 Vector3::operator + (const Vector3& rhs) const
 	{
@@ -78,24 +84,36 @@ namespace dw
 	}
 	
 	// Extra assignment operators
-	Vector3 Vector3::operator += (long double d) const
+	Vector3 Vector3::operator += (const long double d) 
 	{
-		return Vector3(x + d, y + d, z + d);
+		x = x + d;
+		y = y + d;
+		z = z + d;
+		return *this;
 	}
 
-	Vector3 Vector3::operator -= (long double d) const
+	Vector3 Vector3::operator -= (const long double d) 
 	{
-		return Vector3(x - d, y - d, z - d);
+		x = x - d;
+		y = y - d;
+		z = z - d;
+		return *this;
 	}
 
-	Vector3 Vector3::operator *= (long double d) const
+	Vector3 Vector3::operator *= (const long double d) 
 	{
-		return Vector3(x * d, y * d, z * d);
+		x = x * d;
+		y = y * d;
+		z = z * d;
+		return *this;
 	}
 
-	Vector3 Vector3::operator /= (long double d) const
+	Vector3 Vector3::operator /= (const long double d) 
 	{
-		return Vector3(x / d, y / d, z / d);
+		x = x / d;
+		y = y / d;
+		z = z / d;
+		return *this;
 	}
 
 	// Vector operations

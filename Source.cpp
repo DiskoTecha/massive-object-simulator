@@ -4,51 +4,62 @@
 #include "DWUnitTest.h"
 #include "MassiveObject.h"
 #include "Vector3.h"
+#include "Visualizer3D.h"
 #include <cstdio>
 
-#include "pandaFramework.h"
-#include "pandaSystem.h"
-#include "genericAsyncTask.h"
-#include "asyncTaskManager.h"
-#include "cIntervalManager.h"
-#include "cLerpNodePathInterval.h"
-#include "cMetaInterval.h"
-
-// Global task manager
-PointerTo<AsyncTaskManager> taskManager = AsyncTaskManager::get_global_ptr();
-
-// Global clock
-PointerTo<ClockObject> globalClock = ClockObject::get_global_clock();
-
-// Camera
-NodePath camera;
-
-// Task -- a global or static function that returns the AsyncTask::DoneStatus, task object pointer passed as argument, and pointer to custom data (we pass void pointer instead)
-
-AsyncTask::DoneStatus massiveObjectMovementTask(GenericAsyncTask* task, void* data)
-{
-	// TODO handle the new positions of the massive objects
-
-	// Tells the task manager to continue this task the next frame
-	return AsyncTask::DS_cont;
-}
-
-AsyncTask::DoneStatus cameraMovementTask(GenericAsyncTask* task, void* data)
-{
-	// TODO handle the movement of the camera
-	
-	// Continue task in next frame
-	return AsyncTask::DS_cont;
-}
+//// Global task manager
+//PointerTo<AsyncTaskManager> taskManager = AsyncTaskManager::get_global_ptr();
+//
+//// Global clock
+//PointerTo<ClockObject> globalClock = ClockObject::get_global_clock();
+//
+//// Camera
+//NodePath camera;
+//
+//// Task -- a global or static function that returns the AsyncTask::DoneStatus, task object pointer passed as argument, and pointer to custom data (we pass void pointer instead)
+//
+//AsyncTask::DoneStatus massiveObjectMovementTask(GenericAsyncTask* task, void* data)
+//{
+//	// TODO handle the new positions of the massive objects
+//
+//	// Tells the task manager to continue this task the next frame
+//	return AsyncTask::DS_cont;
+//}
+//
+//AsyncTask::DoneStatus cameraMovementTask(GenericAsyncTask* task, void* data)
+//{
+//	// TODO handle the movement of the camera
+//	
+//	// Continue task in next frame
+//	return AsyncTask::DS_cont;
+//}
 
 using namespace dw;
 
-int main(int argc, char **argv)
+void runUnitTests();
+
+int main(int argc, char** argv)
+{
+	// Run the unit tests
+	runUnitTests();
+
+	// Visualize
+	Visualizer3D* visualizer = Visualizer3D::getInstance("Testin it out");
+	visualizer->init(argc, argv);
+	visualizer->run();
+	visualizer->shutdown();
+
+	return 0;
+}
+
+void runUnitTests()
 {
 	DWUnitTest unitTest("Vector3 Test", false);
 	std::cout << "DWUnitTest Version:" << unitTest.version() << std::endl;
+	std::cout << "---------------------" << std::endl;
 
 	// ---------- Vector3 testing ---------- //
+	std::cout << "Vector3 Testing" << std::endl;
 
 	// Vector3: Constructors
 	Vector3 vec3_1(3, 5, 7);
@@ -66,13 +77,19 @@ int main(int argc, char **argv)
 	vec3_5 = vec3_4;
 
 	unitTest.test("\"=\" Operator (Copy & Swap)", vec3_5.x == vec3_4.x && vec3_5.y == vec3_4.y && vec3_5.z == vec3_4.z);
-	
+
+	Vector3 vec3_12(3, 4, 5);
+	Vector3 vec3_13(3, 4, 5);
+	Vector3 vec3_14(3, 4, 5.1);
+
+	unitTest.test("\"==\" Operator (Equality)", vec3_12 == vec3_13 && !(vec3_12 == vec3_14));
+
 	Vector3 vec3_6(2, 3, 4);
 	Vector3 vec3_7(9, 11, 13);
 
 	Vector3 vecOp = vec3_6 + vec3_7;
 	unitTest.test("\"+\" Operator", vecOp.x == vec3_6.x + vec3_7.x && vecOp.y == vec3_6.y + vec3_7.y && vecOp.z == vec3_6.z + vec3_7.z);
-	
+
 	vecOp = vec3_6 - vec3_7;
 	unitTest.test("\"-\" Operator", vecOp.x == vec3_6.x - vec3_7.x && vecOp.y == vec3_6.y - vec3_7.y && vecOp.z == vec3_6.z - vec3_7.z);
 
@@ -117,28 +134,50 @@ int main(int argc, char **argv)
 	// Vector3: Summary
 	unitTest.report();
 
-	// Open a new window framework
-	PandaFramework frame;
-	frame.open_framework(argc, argv);
+	// ---------- MassiveObject testing ---------- //
+	std::cout << "---------------------" << std::endl;
+	std::cout << "MassiveObject Testing" << std::endl;
+	unitTest.reinitialize("MassiveObject Test", false);
 
-	// Set the window title and open the window
-	frame.set_window_title("Panda Window");
-	WindowFramework* window = frame.open_window();
-	window->set_background_type(WindowFramework::BackgroundType::BT_black);
+	MassiveObject mo1;
+	MassiveObject mo2(111, 222);
+	MassiveObject mo3(333, 444, Vector3(1, 2, 3), Vector3(4, 5, 6));
+	MassiveObject mo4(mo2);
 
-	// Store camera in variable
-	camera = window->get_camera_group();
+	// MassiveObject: Getters
+	unitTest.test("Id Getter: getId()", mo1.getId() != mo2.getId() && mo3.getId() != mo4.getId() && mo2.getId() != mo3.getId() && mo1.getId() != mo4.getId() && mo2.getId() != mo4.getId() && mo1.getId() != mo3.getId());
+	unitTest.test("Mass Getter: getMass()", mo1.getMass() == 0.0 && mo3.getMass() == 333 && sizeof(mo2.getMass()) == sizeof(long double));
+	unitTest.test("Volume Getter: getVolume()", mo1.getVolume() == 0.0 && mo2.getVolume() == 222 && sizeof(mo3.getVolume()) == sizeof(long double));
+	unitTest.test("Position Getter: getPosition()", mo1.getPosition() == Vector3() && mo3.getPosition() == Vector3(1, 2, 3));
+	unitTest.test("Velocity Getter: getVelocity()", mo1.getVelocity() == Vector3() && mo3.getVelocity() == Vector3(4, 5, 6));
 
-	// TODO add the tasks
+	// MassiveObject: Constructors
+	unitTest.test("Default Constructor: no params", mo1.getMass() == 0.0 && mo1.getVolume() == 0.0 && mo1.getPosition() == Vector3() && mo1.getVelocity() == Vector3());
+	unitTest.test("Constructor: mass and volume", mo2.getMass() == 111 && mo2.getVolume() == 222 && mo1.getPosition() == Vector3() && mo1.getVelocity() == Vector3());
+	unitTest.test("Constructor: all params", mo3.getMass() == 333 && mo3.getVolume() == 444 && mo3.getPosition() == Vector3(1, 2, 3) && mo3.getVelocity() == Vector3(4, 5, 6));
+	unitTest.test("Constructor: copy", mo4.getMass() == 111 && mo4.getVolume() == 222 && mo4.getPosition() == Vector3() && mo4.getVelocity() == Vector3());
+	
+	// MassiveObject: Setters
+	mo1.setPosition(Vector3(1010101, 2020202, 3030303));
+	mo3.setMass(333333333.333);
+	mo4.setVolume(1234554321);
+	mo2.setVelocity(Vector3(2000.1, 3000.2, 4000.3));
 
-	// Run engine
-	frame.main_loop();
+	unitTest.test("Mass Setter: setMass()", mo3.getMass() == 333333333.333);
+	unitTest.test("Volume Setter: setVolume()", mo4.getVolume() == 1234554321);
+	unitTest.test("Position Setter: setPosition()", mo1.getPosition() == Vector3(1010101, 2020202, 3030303));
+	unitTest.test("Velocity Setter: setVelocity()", mo2.getVelocity() == Vector3(2000.1, 3000.2, 4000.3));
 
-	// Shut down engine when done
-	frame.close_framework();
+	// MassiveObject: Helper Functions
+	mo1.setMass(234234);
+	mo1.setVelocity(Vector3(23, 4, 2));
+	mo1.setVolume(339939);
+	int id = mo1.getId();
+	mo1.reset();
 
-	return 0;
+	unitTest.test("Reset: reset()", mo1.getPosition() == Vector3() && mo1.getVelocity() == Vector3() && mo1.getMass() == 0.0 && mo1.getVolume() == 0.0 && mo1.getId() == id);
+
+	// MassiveObject: Summary
+	unitTest.report();
 }
-
-
 

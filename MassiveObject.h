@@ -18,6 +18,7 @@ namespace dw
 		long double volume;
 		static int objectsInstantiated;
 		int id;
+
 	public:
 		MassiveObject();
 		MassiveObject(long double, long double, Vector3 pos = Vector3(), Vector3 vel = Vector3());

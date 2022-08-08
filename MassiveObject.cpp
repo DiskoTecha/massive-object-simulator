@@ -36,7 +36,7 @@ namespace dw
 		position = std::move(rhs.position);
 		velocity = std::move(rhs.velocity);
 
-		// Although it was moved, the rhs still exists and it is a new MassiveObject
+		// Although it was moved, the rhs still exists and this is a new MassiveObject
 		++objectsInstantiated;
 		id = objectsInstantiated;
 

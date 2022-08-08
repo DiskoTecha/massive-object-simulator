@@ -2,7 +2,7 @@
 #define DW_VECTOR_3
 
 // Version number macro
-#define DW_VECTOR_3_VERSION "1.0.2"
+#define DW_VECTOR_3_VERSION "1.0.3"
 
 #include <memory>
 #include <cstdio>
@@ -24,15 +24,16 @@ namespace dw
 		~Vector3();
 
 		Vector3& operator = (Vector3);
+		bool operator == (const Vector3&) const;
 		Vector3 operator + (const Vector3&) const;
 		Vector3 operator - (const Vector3&) const;
 		Vector3 operator * (const Vector3&) const;		
 		Vector3 operator / (const Vector3&) const;
 
-		Vector3 operator += (long double) const;
-		Vector3 operator -= (long double) const;
-		Vector3 operator *= (long double) const;
-		Vector3 operator /= (long double) const;
+		Vector3 operator += (const long double);
+		Vector3 operator -= (const long double);
+		Vector3 operator *= (const long double);
+		Vector3 operator /= (const long double);
 
 		void reset();
 		void swap(Vector3&);
@@ -51,10 +52,7 @@ namespace dw
 	Vector3 operator / (Vector3, const long double&);
 
 	Vector3 operator + (const long double&, Vector3);
-	Vector3 operator - (const long double&, Vector3);
 	Vector3 operator * (const long double&, Vector3);
-	Vector3 operator / (const long double&, Vector3);
-
 }
 
 
