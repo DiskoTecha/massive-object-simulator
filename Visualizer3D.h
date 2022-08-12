@@ -1,7 +1,7 @@
 #ifndef DW_VISUALIZER_3D
 #define DW_VISUALIZER_3D
 
-#define DW_VISUALIZER_3D_VERSION "1.0.2"
+#define DW_VISUALIZER_3D_VERSION "1.0.3"
 
 #include "pandaFramework.h"
 #include "pandaSystem.h"
@@ -10,11 +10,14 @@
 #include "cIntervalManager.h"
 #include "cLerpNodePathInterval.h"
 #include "cMetaInterval.h"
+
 #include <mutex>
+
+#include "Vector3.h"
 
 namespace dw
 {
-	// Singleton class wrapping Panda3D's commonly used functionality
+	// Singleton class wrapping Panda3D's commonly used visual functionality
 	class Visualizer3D
 	{
 		static std::mutex mutex;
@@ -41,6 +44,8 @@ namespace dw
 		void init(int&, char**&);
 		void run();
 		void shutdown();
+
+		NodePath loadModel(const char* path, Vector3 scale = Vector3(1, 1, 1), Vector3 pos = Vector3(), Vector3 color = Vector3(1, 1, 1));
 
 		NodePath getCamera();
 		PandaFramework* getFrame();

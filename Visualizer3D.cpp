@@ -31,7 +31,7 @@ namespace dw
 
 		// Set the window title and open the window
 		frame->set_window_title(title);
-		WindowFramework* window = frame->open_window();
+		window = frame->open_window();
 
 		// Set the background black because the natural grey is gross
 		window->set_background_type(WindowFramework::BackgroundType::BT_black);
@@ -52,6 +52,16 @@ namespace dw
 		frame->close_framework();
 	}
 
+	NodePath Visualizer3D::loadModel(const char* path, Vector3 scale, Vector3 pos, Vector3 color)
+	{
+		NodePath model = window->load_model(frame->get_models(), path);
+		model.reparent_to(window->get_render());
+		model.set_pos(pos.x, pos.y, pos.z);
+		model.set_scale(scale.x, scale.y, scale.z);
+		model.set_color(color.x, color.y, color.z);
+		return model;
+	}
+
 	// Getters: Unwrap the panda framework
 	NodePath Visualizer3D::getCamera()
 	{
@@ -67,5 +77,4 @@ namespace dw
 	{
 		return window;
 	}
-
 }

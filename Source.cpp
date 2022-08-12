@@ -6,6 +6,8 @@
 #include "Vector3.h"
 #include "Visualizer3D.h"
 #include <cstdio>
+#include <time.h>
+#include <stdlib.h>
 
 //// Global task manager
 //PointerTo<AsyncTaskManager> taskManager = AsyncTaskManager::get_global_ptr();
@@ -43,9 +45,19 @@ int main(int argc, char** argv)
 	// Run the unit tests
 	runUnitTests();
 
+	srand(time(NULL));
+
 	// Visualize
 	Visualizer3D* visualizer = Visualizer3D::getInstance("Testin it out");
 	visualizer->init(argc, argv);
+
+	NodePath model = visualizer->loadModel("../../models/sphere", Vector3(5, 5, 5), Vector3(500, 500, 500), 
+		Vector3((float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0));
+	NodePath model1 = visualizer->loadModel("../../models/sphere", Vector3(100, 100, 100), Vector3(25, 25, 25),
+		Vector3((float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0));
+
+	visualizer->getWindow()->setup_trackball();
+	visualizer->getCamera().set_pos(-550, 0, 0);
 	visualizer->run();
 	visualizer->shutdown();
 
