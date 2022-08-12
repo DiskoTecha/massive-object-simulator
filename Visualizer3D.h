@@ -15,6 +15,9 @@
 
 #include "Vector3.h"
 
+static PointerTo<AsyncTaskManager> dw_visualizer_3d_task_manager = AsyncTaskManager::get_global_ptr();
+static PointerTo<ClockObject> dw_visualizer_3d_clock = ClockObject::get_global_clock();
+
 namespace dw
 {
 	// Singleton class wrapping Panda3D's commonly used visual functionality
@@ -46,7 +49,7 @@ namespace dw
 		void shutdown();
 
 		NodePath loadModel(const char* path, Vector3 scale = Vector3(1, 1, 1), Vector3 pos = Vector3(), Vector3 color = Vector3(1, 1, 1));
-
+		void addTask(const char* name, GenericAsyncTask::TaskFunc* taskFunc, void* userData = nullptr);
 		NodePath getCamera();
 		PandaFramework* getFrame();
 		WindowFramework* getWindow();

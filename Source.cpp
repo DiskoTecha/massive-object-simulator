@@ -9,36 +9,22 @@
 #include <time.h>
 #include <stdlib.h>
 
-//// Global task manager
-//PointerTo<AsyncTaskManager> taskManager = AsyncTaskManager::get_global_ptr();
-//
-//// Global clock
-//PointerTo<ClockObject> globalClock = ClockObject::get_global_clock();
-//
-//// Camera
-//NodePath camera;
-//
-//// Task -- a global or static function that returns the AsyncTask::DoneStatus, task object pointer passed as argument, and pointer to custom data (we pass void pointer instead)
-//
-//AsyncTask::DoneStatus massiveObjectMovementTask(GenericAsyncTask* task, void* data)
-//{
-//	// TODO handle the new positions of the massive objects
-//
-//	// Tells the task manager to continue this task the next frame
-//	return AsyncTask::DS_cont;
-//}
-//
-//AsyncTask::DoneStatus cameraMovementTask(GenericAsyncTask* task, void* data)
-//{
-//	// TODO handle the movement of the camera
-//	
-//	// Continue task in next frame
-//	return AsyncTask::DS_cont;
-//}
-
 using namespace dw;
 
 void runUnitTests();
+
+NodePath modelToMove;
+float speed = 2;
+
+AsyncTask::DoneStatus moveSpheresTask(GenericAsyncTask* task, void* data)
+{
+	double dt = dw_visualizer_3d_clock->get_dt();
+
+	LPoint3 pos = modelToMove.get_pos();
+	modelToMove.set_pos(pos.get_x() + dt * speed, pos.get_y() + dt * speed, pos.get_z() + dt * speed);
+
+	return AsyncTask::DS_cont;
+}
 
 int main(int argc, char** argv)
 {
@@ -56,8 +42,11 @@ int main(int argc, char** argv)
 	NodePath model1 = visualizer->loadModel("../../models/sphere", Vector3(100, 100, 100), Vector3(25, 25, 25),
 		Vector3((float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0));
 
+	modelToMove = model;
+
+	visualizer->getCamera().set_pos(550, 0, 0);
 	visualizer->getWindow()->setup_trackball();
-	visualizer->getCamera().set_pos(-550, 0, 0);
+	visualizer->addTask("Move Spheres Task", &moveSpheresTask);
 	visualizer->run();
 	visualizer->shutdown();
 

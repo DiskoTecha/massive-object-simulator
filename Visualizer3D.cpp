@@ -62,6 +62,11 @@ namespace dw
 		return model;
 	}
 
+	void Visualizer3D::addTask(const char* name, GenericAsyncTask::TaskFunc* taskFunc, void* userData)
+	{
+		dw_visualizer_3d_task_manager->add(new GenericAsyncTask(name, taskFunc, userData));
+	}
+
 	// Getters: Unwrap the panda framework
 	NodePath Visualizer3D::getCamera()
 	{
