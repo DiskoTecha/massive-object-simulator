@@ -43,6 +43,22 @@ namespace dw
 		rhs.reset();
 	}
 
+	void MassiveObject::swap(MassiveObject& other)
+	{
+		std::swap(mass, other.mass);
+		std::swap(volume, other.volume);
+		std::swap(position, other.position);
+		std::swap(velocity, other.velocity);
+	}
+
+	MassiveObject& MassiveObject::operator = (MassiveObject rhs)
+	{
+		swap(rhs);
+
+		return *this;
+	}
+
+
 	void MassiveObject::reset()
 	{
 		mass = 0.0;

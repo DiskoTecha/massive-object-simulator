@@ -5,7 +5,7 @@ namespace dw
 	// Constructors
 	Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {}
 	Vector3::Vector3(long double x, long double y, long double z) : x(x), y(y), z(z) {}
-	Vector3::Vector3(Vector3& otherVector) : x(otherVector.x), y(otherVector.y), z(otherVector.z) {}
+	Vector3::Vector3(const Vector3& otherVector) : x(otherVector.x), y(otherVector.y), z(otherVector.z) {}
 	Vector3::Vector3(Vector3&& rhs) noexcept
 	{
 		x = std::move(rhs.x);

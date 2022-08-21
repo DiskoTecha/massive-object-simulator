@@ -19,11 +19,16 @@ namespace dw
 		static int objectsInstantiated;
 		int id;
 
+	protected:
+		void swap(MassiveObject&);
+
 	public:
 		MassiveObject();
 		MassiveObject(long double, long double, Vector3 pos = Vector3(), Vector3 vel = Vector3());
 		MassiveObject(MassiveObject&);
 		MassiveObject(MassiveObject&&) noexcept;
+
+		MassiveObject& operator = (MassiveObject);
 
 		int getId();
 		long double getMass();

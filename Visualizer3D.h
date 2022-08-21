@@ -12,6 +12,7 @@
 #include "cMetaInterval.h"
 
 #include <mutex>
+#include <cstdlib>
 
 #include "Vector3.h"
 
@@ -20,7 +21,7 @@ static PointerTo<ClockObject> dw_visualizer_3d_clock = ClockObject::get_global_c
 
 namespace dw
 {
-	// Singleton class wrapping Panda3D's commonly used visual functionality
+	// Singleton class wrapping Panda3D's commonly used visual functionality for user with 3D data visualization
 	class Visualizer3D
 	{
 		static std::mutex mutex;
@@ -48,9 +49,10 @@ namespace dw
 		void run();
 		void shutdown();
 
-		NodePath loadModel(const char* path, Vector3 scale = Vector3(1, 1, 1), Vector3 pos = Vector3(), Vector3 color = Vector3(1, 1, 1));
+		NodePath loadModel(const char* path, Vector3 scale = Vector3(1, 1, 1), Vector3 pos = Vector3(), Vector3 color = Vector3(-1, -1, -1));
 		void addTask(const char* name, GenericAsyncTask::TaskFunc* taskFunc, void* userData = nullptr);
-		NodePath getCamera();
+		void addKeyEvent(const char* key, const char* name, EventHandler::EventCallbackFunction* eventFunction, void* userData = nullptr);
+		NodePath* getCameraGroup();
 		PandaFramework* getFrame();
 		WindowFramework* getWindow();
 

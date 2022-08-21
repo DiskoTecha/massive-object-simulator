@@ -3,7 +3,43 @@
 namespace dw
 {
 	GravitationalBodySimulator::GravitationalBodySimulator(MassiveObject* objects, int objectAmount, double forceMultiplier) : 
-		objects(objects), startingObjects(objects), objectAmount(objectAmount), forceMultiplier(forceMultiplier) {}
+		objects(objects), startingObjects(objects), objectAmount(objectAmount), forceMultiplier(forceMultiplier), 
+		boundsAction(BoundsAction::NO_BOUNDS), boundsMin(Vector3()), boundsMax(Vector3()) {}
+
+	GravitationalBodySimulator::GravitationalBodySimulator()
+	{
+		GravitationalBodySimulator(nullptr, 0, 0);
+	}
+
+	GravitationalBodySimulator::GravitationalBodySimulator(const GravitationalBodySimulator& other)
+	{
+		objects = other.objects;
+		startingObjects = other.objects;
+		objectAmount = other.objectAmount;
+		forceMultiplier = other.forceMultiplier;
+		boundsAction = other.boundsAction;
+		boundsMin = other.boundsMin;
+		boundsMax = other.boundsMax;
+	}
+
+
+	void GravitationalBodySimulator::swap(GravitationalBodySimulator& gravSim)
+	{
+		std::swap(objects, gravSim.objects);
+		std::swap(objectAmount, gravSim.objectAmount);
+		std::swap(forceMultiplier, gravSim.forceMultiplier);
+		std::swap(startingObjects, gravSim.startingObjects);
+		std::swap(boundsAction, gravSim.boundsAction);
+		std::swap(boundsMin, gravSim.boundsMin);
+		std::swap(boundsMax, gravSim.boundsMax);
+	}
+
+	// Copy & Swap
+	GravitationalBodySimulator& GravitationalBodySimulator::operator = (GravitationalBodySimulator rhs)
+	{
+		swap(rhs);
+		return *this;
+	}
 
 	MassiveObject* GravitationalBodySimulator::step(long double dt)
 	{

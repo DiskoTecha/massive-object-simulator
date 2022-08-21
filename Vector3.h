@@ -2,7 +2,7 @@
 #define DW_VECTOR_3
 
 // Version number macro
-#define DW_VECTOR_3_VERSION "1.0.3"
+#define DW_VECTOR_3_VERSION "1.0.4"
 
 #include <memory>
 #include <cstdio>
@@ -19,7 +19,7 @@ namespace dw
 
 		Vector3();
 		Vector3(long double x, long double y = 0, long double z = 0);
-		Vector3(Vector3&);
+		Vector3(const Vector3&);
 		Vector3(Vector3&&) noexcept;
 		~Vector3();
 

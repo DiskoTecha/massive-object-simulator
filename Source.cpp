@@ -5,25 +5,96 @@
 #include "MassiveObject.h"
 #include "Vector3.h"
 #include "Visualizer3D.h"
+#include "GravitationalBodySimulator.h"
 #include <cstdio>
 #include <time.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace dw;
 
 void runUnitTests();
 
-NodePath modelToMove;
+constexpr int object_amount = 150;
+
+GravitationalBodySimulator gravSim;
+MassiveObject objectsToMove[object_amount];
+NodePath models[object_amount];
+Camera* camera;
+NodePath cameraGroup;
+
+float forceMultiplier = 1000000000;
 float speed = 2;
+float camSpeed = 60;
+double xBound = 5000;
+double yBound = 5000;
+double zBound = 5000;
+int velMin = -1;
+int velMax = 1;
+int massMin = 2000000;
+int massMax = 2500000;
+int volumeMin = 1200;
+int volumeMax = 5000;
+
+MassiveObject massiveObjectRandomizer()
+{
+	Vector3 pos = Vector3(rand() % (int)(xBound * 2) - xBound, rand() % (int)(yBound * 2) - yBound, rand() % (int)(zBound * 2) - zBound);
+	//Vector3 vel = Vector3(rand() % (velMax - velMin) + velMin, rand() % (velMax - velMin) + velMin, rand() % (velMax - velMin) + velMin);
+	Vector3 vel = Vector3();
+	MassiveObject newObject = MassiveObject(rand() % (massMax - massMin) + massMin, rand() % (volumeMax - volumeMin) + volumeMin, pos, vel);
+	return newObject;
+}
 
 AsyncTask::DoneStatus moveSpheresTask(GenericAsyncTask* task, void* data)
 {
 	double dt = dw_visualizer_3d_clock->get_dt();
+	gravSim.step(dt);
 
-	LPoint3 pos = modelToMove.get_pos();
-	modelToMove.set_pos(pos.get_x() + dt * speed, pos.get_y() + dt * speed, pos.get_z() + dt * speed);
+	for (int i = 0; i < object_amount; ++i)
+	{
+		Vector3 pos = objectsToMove[i].getPosition();
+		models[i].set_pos(pos.x, pos.y, pos.z);
+	}
+
 
 	return AsyncTask::DS_cont;
+}
+
+AsyncTask::DoneStatus moveCameraTask(GenericAsyncTask* task, void* data)
+{
+	double dt = dw_visualizer_3d_clock->get_dt();
+
+	LPoint3 pos = cameraGroup.get_pos();
+	cameraGroup.set_pos(pos.get_x(), pos.get_y() - dt * camSpeed, pos.get_z());
+	
+	return AsyncTask::DS_cont;
+}
+
+void moveCamOnBoundaryEvent(const Event* event, void* data)
+{
+
+	float fov = camera->get_lens()->get_fov().get_x();
+	std::cout << "fov is : " << fov << std::endl;
+
+	std::cout << "distance from origin is : " << yBound / std::tan(fov * 3.1415926 / 180) << std::endl;
+
+	if (*(int*)data == 1)
+	{
+		// Move to x boundary with y = z = 0, rotate towards origin
+		cameraGroup.set_pos(yBound / std::tan(fov * 3.1415926 / 180), 0, 0);
+		cameraGroup.set_hpr(90, 0, 0);
+	}
+	else if (*(int*)data == 2)
+	{
+		// Move to y boundary with x = z = 0, rotate towards origin
+		cameraGroup.set_pos(0, xBound / std::tan(fov * 3.1415926 / 180), 0);
+		cameraGroup.set_hpr(180, 0, 0);
+	}
+	else if (*(int*)data == 3)
+	{
+		// Move to z boundary with x = y = 0, rotate towards origin
+		cameraGroup.set_pos(0, 0, xBound / std::tan(fov * 3.1415926 / 180));
+		cameraGroup.set_hpr(0, 270, 0);
+	}
 }
 
 int main(int argc, char** argv)
@@ -31,23 +102,48 @@ int main(int argc, char** argv)
 	// Run the unit tests
 	runUnitTests();
 
-	srand(time(NULL));
-
 	// Visualize
 	Visualizer3D* visualizer = Visualizer3D::getInstance("Testin it out");
 	visualizer->init(argc, argv);
 
-	NodePath model = visualizer->loadModel("../../models/sphere", Vector3(5, 5, 5), Vector3(500, 500, 500), 
-		Vector3((float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0));
-	NodePath model1 = visualizer->loadModel("../../models/sphere", Vector3(100, 100, 100), Vector3(25, 25, 25),
-		Vector3((float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0));
+	for (int i = 0; i < object_amount; ++i)
+	{
+		objectsToMove[i] = massiveObjectRandomizer();
+		float r = std::cbrt(3 * objectsToMove[i].getVolume() / (4 * 3.14159));
+		std::cout << "r = " << r << std::endl;
+		models[i] = visualizer->loadModel("../../models/sphere", Vector3(r, r, r), objectsToMove[i].getPosition());
+	}
 
-	modelToMove = model;
+	gravSim = GravitationalBodySimulator(objectsToMove, object_amount, forceMultiplier);
+	gravSim.setBounds(BoundsAction::BOUNCE, Vector3(-xBound, -yBound, -zBound), Vector3(xBound, yBound, zBound));
 
-	visualizer->getCamera().set_pos(550, 0, 0);
-	visualizer->getWindow()->setup_trackball();
+	//NodePath model = visualizer->loadModel("../../models/sphere", Vector3(5, 5, 5), Vector3(500, 300, 800));
+	//NodePath model1 = visualizer->loadModel("../../models/sphere", Vector3(100, 100, 100), Vector3(25, 25, 25));
+	//NodePath model2 = visualizer->loadModel("../../models/sphere", Vector3(0.3, 0.3, 0.3), Vector3(-5, 0, 0));
+
+	//modelToMove = model;
+
+	camera = visualizer->getWindow()->get_camera(0);
+	cameraGroup = *visualizer->getCameraGroup();
+
 	visualizer->addTask("Move Spheres Task", &moveSpheresTask);
+	//visualizer->addTask("Move Camera Task", &moveCameraTask);
+
+	visualizer->getWindow()->enable_keyboard();
+
+	int x = 1;
+	int y = 2;
+	int z = 3;
+	void* xData = &x;
+	void* yData = &y;
+	void* zData = &z;
+	visualizer->addKeyEvent("1", "Cam on X Boundary", moveCamOnBoundaryEvent, xData);
+	//visualizer->getFrame()->define_key("1", "Cam on X Boundary", moveCamOnBoundaryEvent, xData);
+	visualizer->getFrame()->define_key("2", "Cam on Y Boundary", moveCamOnBoundaryEvent, yData);
+	visualizer->getFrame()->define_key("3", "Cam on Z Boundary", moveCamOnBoundaryEvent, zData);
+
 	visualizer->run();
+
 	visualizer->shutdown();
 
 	return 0;

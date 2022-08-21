@@ -3,7 +3,10 @@
 namespace dw
 {
 	// Protected Constructor
-	Visualizer3D::Visualizer3D(const char* title) : title(title) {}
+	Visualizer3D::Visualizer3D(const char* title) : title(title) 
+	{
+		srand(time(NULL));
+	}
 
 	// Static private fields
 	Visualizer3D* Visualizer3D::instance = nullptr;
@@ -58,7 +61,16 @@ namespace dw
 		model.reparent_to(window->get_render());
 		model.set_pos(pos.x, pos.y, pos.z);
 		model.set_scale(scale.x, scale.y, scale.z);
-		model.set_color(color.x, color.y, color.z);
+		if (color.x < 0 || color.y < 0 || color.z < 0)
+		{
+			Vector3 randomColor = Vector3((float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0, (float)(rand() % 6 + 3) / 10.0);
+			model.set_color(randomColor.x, randomColor.y, randomColor.z);
+		}
+		else
+		{
+			model.set_color(color.x, color.y, color.z);
+		}
+
 		return model;
 	}
 
@@ -67,10 +79,16 @@ namespace dw
 		dw_visualizer_3d_task_manager->add(new GenericAsyncTask(name, taskFunc, userData));
 	}
 
-	// Getters: Unwrap the panda framework
-	NodePath Visualizer3D::getCamera()
+	void Visualizer3D::addKeyEvent(const char* key, const char* name, EventHandler::EventCallbackFunction* eventFunction, void* userData)
 	{
-		return camera;
+		frame->define_key(key, name, eventFunction, userData);
+	}
+
+
+	// Getters: Unwrap the panda framework
+	NodePath* Visualizer3D::getCameraGroup()
+	{
+		return &camera;
 	}
 
 	PandaFramework* Visualizer3D::getFrame()
