@@ -116,6 +116,23 @@ namespace dw
 		return *this;
 	}
 
+	// Assignment with Vector3 operators
+	Vector3 Vector3::operator += (const Vector3& v)
+	{
+		x = x + v.x;
+		y = y + v.y;
+		z = z + v.z;
+		return *this;
+	}
+
+	Vector3 Vector3::operator -= (const Vector3& v)
+	{
+		x = x - v.x;
+		y = y - v.y;
+		z = z - v.z;
+		return *this;
+	}
+
 	// Vector operations
 	long double Vector3::dot(const Vector3& rhs) const
 	{
@@ -140,6 +157,11 @@ namespace dw
 		return *this / this->magnitude();
 	}
 
+	Vector3 Vector3::rotateByQuaternion(float i, float j, float k, float s) const
+	{
+		Vector3 u = Vector3(i, j, k);
+		return (2 * dot(u) * u) + ((2 * s * s - 1) * (*this)) + (2 * s * u.cross(*this));
+	}
 
 	// Double on Vector3 operators
 	Vector3 operator + (Vector3 v, const long double& d)

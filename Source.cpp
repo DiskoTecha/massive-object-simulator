@@ -13,6 +13,7 @@
 using namespace dw;
 
 void runUnitTests();
+void runVisualizer(int argc, char** argv);
 
 constexpr int object_amount = 150;
 
@@ -25,6 +26,7 @@ NodePath cameraGroup;
 float forceMultiplier = 1000000000;
 float speed = 2;
 float camSpeed = 60;
+Vector3 camMoveDir = Vector3();
 double xBound = 5000;
 double yBound = 5000;
 double zBound = 5000;
@@ -34,6 +36,20 @@ int massMin = 2000000;
 int massMax = 2500000;
 int volumeMin = 1200;
 int volumeMax = 5000;
+
+bool exitProgram = false;
+double mouseSensitivity = 0.2;
+
+int main(int argc, char** argv)
+{
+	// Run the unit tests
+	runUnitTests();
+
+	// Run visualizer
+	runVisualizer(argc, argv);
+
+	return 0;
+}
 
 MassiveObject massiveObjectRandomizer()
 {
@@ -61,47 +77,109 @@ AsyncTask::DoneStatus moveSpheresTask(GenericAsyncTask* task, void* data)
 
 AsyncTask::DoneStatus moveCameraTask(GenericAsyncTask* task, void* data)
 {
-	double dt = dw_visualizer_3d_clock->get_dt();
-
 	LPoint3 pos = cameraGroup.get_pos();
-	cameraGroup.set_pos(pos.get_x(), pos.get_y() - dt * camSpeed, pos.get_z());
-	
+	LQuaternion rot = cameraGroup.get_quat();
+	Vector3 dir = camMoveDir.rotateByQuaternion(rot.get_i(), rot.get_j(), rot.get_k(), rot.get_r());
+
+	cameraGroup.set_pos(pos.get_x() + dir.x * camSpeed, pos.get_y() + dir.y * camSpeed, pos.get_z() + dir.z * camSpeed);
+
 	return AsyncTask::DS_cont;
+}
+
+void moveCamFromKeyboardEvent(const Event* event, void* data)
+{
+	switch (*(int*)data)
+	{
+	case 1:
+		camMoveDir += Vector3(0, 1, 0);
+		break;
+	case 2:
+		camMoveDir -= Vector3(1, 0, 0);
+		break;
+	case 3:
+		camMoveDir -= Vector3(0, 1, 0);
+		break;
+	case 4:
+		camMoveDir += Vector3(1, 0, 0);
+		break;
+	case 5:
+		camMoveDir -= Vector3(0, 0, 1);
+		break;
+	case 6:
+		camMoveDir += Vector3(0, 0, 1);
+		break;
+	case -1:
+		camMoveDir -= Vector3(0, 1, 0);
+		break;
+	case -2:
+		camMoveDir += Vector3(1, 0, 0);
+		break;
+	case -3:
+		camMoveDir += Vector3(0, 1, 0);
+		break;
+	case -4:
+		camMoveDir -= Vector3(1, 0, 0);
+		break;
+	case -5:
+		camMoveDir += Vector3(0, 0, 1);
+		break;
+	case -6:
+		camMoveDir -= Vector3(0, 0, 1);
+		break;
+	default:
+		break;
+	}
 }
 
 void moveCamOnBoundaryEvent(const Event* event, void* data)
 {
-
 	float fov = camera->get_lens()->get_fov().get_x();
-	std::cout << "fov is : " << fov << std::endl;
-
-	std::cout << "distance from origin is : " << yBound / std::tan(fov * 3.1415926 / 180) << std::endl;
+	float tanFov = std::tan(fov * 3.1415926 / 180);
 
 	if (*(int*)data == 1)
 	{
-		// Move to x boundary with y = z = 0, rotate towards origin
-		cameraGroup.set_pos(yBound / std::tan(fov * 3.1415926 / 180), 0, 0);
+		// Move to x boundary and account for fov to see most of the bounding box with y = z = 0, rotate towards origin
+		cameraGroup.set_pos(yBound / tanFov + xBound, 0, 0);
 		cameraGroup.set_hpr(90, 0, 0);
 	}
 	else if (*(int*)data == 2)
 	{
-		// Move to y boundary with x = z = 0, rotate towards origin
-		cameraGroup.set_pos(0, xBound / std::tan(fov * 3.1415926 / 180), 0);
+		// Move to y boundary and account for fov to see most of the bounding box with x = z = 0, rotate towards origin
+		cameraGroup.set_pos(0, xBound / tanFov + yBound, 0);
 		cameraGroup.set_hpr(180, 0, 0);
 	}
 	else if (*(int*)data == 3)
 	{
-		// Move to z boundary with x = y = 0, rotate towards origin
-		cameraGroup.set_pos(0, 0, xBound / std::tan(fov * 3.1415926 / 180));
+		// Move to z boundary and account for fov to see most of the bounding box with x = y = 0, rotate towards origin
+		cameraGroup.set_pos(0, 0, xBound / tanFov + zBound);
 		cameraGroup.set_hpr(0, 270, 0);
 	}
 }
 
-int main(int argc, char** argv)
+void exitEvent(const Event* event, void* data)
 {
-	// Run the unit tests
-	runUnitTests();
+	exitProgram = true;
+}
 
+void handleMouse(WindowFramework* window)
+{
+	if (window) {
+		GraphicsWindow* graphicsWindow = window->get_graphics_window();
+		if (graphicsWindow) {
+			double mouseXDif = graphicsWindow->get_pointer(0).get_x() - graphicsWindow->get_properties().get_x_size() / 2;
+			double mouseYDif = graphicsWindow->get_pointer(0).get_y() - graphicsWindow->get_properties().get_y_size() / 2;
+			std::cout << "mouseXDif = " << mouseXDif << std::endl;
+			std::cout << "mouseYDif = " << mouseYDif << std::endl;
+
+			cameraGroup.set_hpr(cameraGroup, -mouseXDif * mouseSensitivity, -mouseYDif * mouseSensitivity, 0);
+
+			graphicsWindow->move_pointer(0, graphicsWindow->get_properties().get_x_size() / 2, graphicsWindow->get_properties().get_y_size() / 2);
+		}
+	}
+}
+
+void runVisualizer(int argc, char** argv)
+{
 	// Visualize
 	Visualizer3D* visualizer = Visualizer3D::getInstance("Testin it out");
 	visualizer->init(argc, argv);
@@ -110,27 +188,28 @@ int main(int argc, char** argv)
 	{
 		objectsToMove[i] = massiveObjectRandomizer();
 		float r = std::cbrt(3 * objectsToMove[i].getVolume() / (4 * 3.14159));
-		std::cout << "r = " << r << std::endl;
 		models[i] = visualizer->loadModel("../../models/sphere", Vector3(r, r, r), objectsToMove[i].getPosition());
 	}
 
 	gravSim = GravitationalBodySimulator(objectsToMove, object_amount, forceMultiplier);
 	gravSim.setBounds(BoundsAction::BOUNCE, Vector3(-xBound, -yBound, -zBound), Vector3(xBound, yBound, zBound));
 
-	//NodePath model = visualizer->loadModel("../../models/sphere", Vector3(5, 5, 5), Vector3(500, 300, 800));
-	//NodePath model1 = visualizer->loadModel("../../models/sphere", Vector3(100, 100, 100), Vector3(25, 25, 25));
-	//NodePath model2 = visualizer->loadModel("../../models/sphere", Vector3(0.3, 0.3, 0.3), Vector3(-5, 0, 0));
-
-	//modelToMove = model;
-
 	camera = visualizer->getWindow()->get_camera(0);
 	cameraGroup = *visualizer->getCameraGroup();
 
 	visualizer->addTask("Move Spheres Task", &moveSpheresTask);
-	//visualizer->addTask("Move Camera Task", &moveCameraTask);
+	visualizer->addTask("Move Camera Task", &moveCameraTask);
 
 	visualizer->getWindow()->enable_keyboard();
 
+	// Set relative mouse mode, hide cursor, enable fullscreen
+	WindowProperties props = visualizer->getWindow()->get_graphics_window()->get_properties();
+	props.set_cursor_hidden(true);
+	props.set_mouse_mode(WindowProperties::M_relative);
+	props.set_fullscreen(true);
+	visualizer->getWindow()->get_graphics_window()->request_properties(props);
+
+	// Key events for camera on boundary keys ('1', '2', '3')
 	int x = 1;
 	int y = 2;
 	int z = 3;
@@ -138,15 +217,65 @@ int main(int argc, char** argv)
 	void* yData = &y;
 	void* zData = &z;
 	visualizer->addKeyEvent("1", "Cam on X Boundary", moveCamOnBoundaryEvent, xData);
-	//visualizer->getFrame()->define_key("1", "Cam on X Boundary", moveCamOnBoundaryEvent, xData);
-	visualizer->getFrame()->define_key("2", "Cam on Y Boundary", moveCamOnBoundaryEvent, yData);
-	visualizer->getFrame()->define_key("3", "Cam on Z Boundary", moveCamOnBoundaryEvent, zData);
+	visualizer->addKeyEvent("2", "Cam on Y Boundary", moveCamOnBoundaryEvent, yData);
+	visualizer->addKeyEvent("3", "Cam on Z Boundary", moveCamOnBoundaryEvent, zData);
 
-	visualizer->run();
+	// Key events for camera movement keys ('w', 'a', 's', 'd')
+	int wDown = 1;
+	int wUp = -1;
+	int aDown = 2;
+	int aUp = -2;
+	int sDown = 3;
+	int sUp = -3;
+	int dDown = 4;
+	int dUp = -4;
+	int qDown = 5;
+	int qUp = -5;
+	int eDown = 6;
+	int eUp = -6;
+	void* wDownData = &wDown;
+	void* wUpData = &wUp;
+	void* aDownData = &aDown;
+	void* aUpData = &aUp;
+	void* sDownData = &sDown;
+	void* sUpData = &sUp;
+	void* dDownData = &dDown;
+	void* dUpData = &dUp;
+	void* qDownData = &qDown;
+	void* qUpData = &qUp;
+	void* eDownData = &eDown;
+	void* eUpData = &eUp;
+	visualizer->addKeyEvent("w", "MoveForward", moveCamFromKeyboardEvent, wDownData);
+	visualizer->addKeyEvent("w-up", "StopMoveForward", moveCamFromKeyboardEvent, wUpData);
+	visualizer->addKeyEvent("a", "MoveLeft", moveCamFromKeyboardEvent, aDownData);
+	visualizer->addKeyEvent("a-up", "StopMoveLeft", moveCamFromKeyboardEvent, aUpData);
+	visualizer->addKeyEvent("s", "MoveBack", moveCamFromKeyboardEvent, sDownData);
+	visualizer->addKeyEvent("s-up", "StopMoveBack", moveCamFromKeyboardEvent, sUpData);
+	visualizer->addKeyEvent("d", "MoveRight", moveCamFromKeyboardEvent, dDownData);
+	visualizer->addKeyEvent("d-up", "StopMoveRight", moveCamFromKeyboardEvent, dUpData);
+	visualizer->addKeyEvent("q", "MoveDown", moveCamFromKeyboardEvent, qDownData);
+	visualizer->addKeyEvent("q-up", "StopMoveDown", moveCamFromKeyboardEvent, qUpData);
+	visualizer->addKeyEvent("e", "MoveUp", moveCamFromKeyboardEvent, eDownData);
+	visualizer->addKeyEvent("e-up", "StopMoveUp", moveCamFromKeyboardEvent, eUpData);
+
+	// Add exit event
+	visualizer->addKeyEvent("escape", "QuitApplication", exitEvent);
+
+	if (visualizer->getWindow()) {
+		GraphicsWindow* graphicsWindow = visualizer->getWindow()->get_graphics_window();
+		if (graphicsWindow) {
+			// Set mouse to center of graphics window (in fullscreen, basically the center of the screen)
+			graphicsWindow->move_pointer(0, graphicsWindow->get_properties().get_x_size() / 2, graphicsWindow->get_properties().get_y_size() / 2);
+		}
+	}
+
+	while (!exitProgram)
+	{
+		handleMouse(visualizer->getWindow());
+		dw_visualizer_3d_task_manager->poll();
+	}
 
 	visualizer->shutdown();
-
-	return 0;
 }
 
 void runUnitTests()
