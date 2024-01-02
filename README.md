@@ -1,5 +1,5 @@
 # Massive Body Simulator
-### Simulating the movement of massive bodies due to their gravitational forces
+### Simulating the movement of massive bodies
 ---
 ## Main Parts
 ### The Massive Body Class
