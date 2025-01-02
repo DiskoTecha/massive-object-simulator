@@ -1,3 +1,4 @@
+// MassiveObject.cpp //
 #include "MassiveObject.h"
 
 namespace dw
